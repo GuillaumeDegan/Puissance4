@@ -1,0 +1,2 @@
+- useState ne se met pas a jour
+- quelle architecture site et comment la mettre en place
