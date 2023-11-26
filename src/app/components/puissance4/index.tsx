@@ -24,28 +24,26 @@ export default function Puissance4() {
 		checkWin();
 	}, [grid]);
 
-	const addToken = (number: number) => {
-		tokenColor = tokenColor === "R" ? "Y" : "R";
+	const addToken = (column: number) => {
 		setGrid((prev) => {
-			let hasDroppedToken = false;
-			const updatedGrid = prev
-				.reverse()
-				.map((line) => {
-					return line.map((item, i) => {
-						if (hasDroppedToken) return item;
-						if (i === number && item === null && !hasDroppedToken) {
-							hasDroppedToken = true;
-							return tokenColor;
-						}
-						return item;
-					});
-				})
-				.reverse();
+			const newGrid = prev.map((row) => row.slice());
 
-			console.log("updatedGrid", number, updatedGrid);
-			return updatedGrid;
+			for (let i = newGrid.length - 1; i >= 0; i--) {
+				if (newGrid[i][column] === null) {
+					newGrid[i][column] = tokenColor;
+
+					console.log("newGrid", column, newGrid);
+					return newGrid;
+				}
+			}
+
+			return prev;
 		});
 	};
+
+	useEffect(() => {
+		tokenColor = tokenColor === "R" ? "Y" : "R";
+	}, [grid]);
 
 	const checkWin = () => {
 		checkHorizontally();
