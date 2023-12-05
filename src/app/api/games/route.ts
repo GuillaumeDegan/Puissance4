@@ -1,17 +1,20 @@
 import connectMongoDB from "@/app/libs/mongodb";
 import Game from "@/app/models/game";
+import Player from "@/app/models/player";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-	const { grid, winner, looser } = await req.json();
+	const { grid, winner, loser } = await req.json();
 	await connectMongoDB();
-	await Game.create({ grid, winner, looser });
+	await Game.create({ grid, winner, loser });
+	await Player.findByIdAndUpdate(winner, { $inc: { nbOfWins: 1 } });
+	await Player.findByIdAndUpdate(loser, { $inc: { nbOfLoses: 1 } });
 	return NextResponse.json({ message: "Game created" }, { status: 201 });
 }
 
 export async function GET() {
 	await connectMongoDB();
-	const games = await Game.find();
+	const games = await Game.find().populate("winner");
 	return NextResponse.json(games);
 }
 

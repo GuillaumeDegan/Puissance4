@@ -1,10 +1,16 @@
 import mongoose, { Schema } from "mongoose";
 
+export type GridItem = "R" | "Y" | null;
+
 const gameSchema = new Schema(
 	{
-		grid: String,
-		winner: String,
-		looser: String,
+		grid: Array<Array<GridItem>>,
+		winner: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Player",
+		},
+		loser: String,
+		winnerColor: String,
 	},
 	{
 		timestamps: true,

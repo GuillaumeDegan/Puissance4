@@ -1,15 +1,15 @@
-"use client";
-import dynamic from "next/dynamic";
+// "use client";
+// import dynamic from "next/dynamic";
 
-const DynamicComponentWithNoSSR = dynamic(
-	() => import("../components/puissance4"),
-	{
-		ssr: false,
-	},
-);
+// const DynamicComponentWithNoSSR = dynamic(
+// 	() => import("../components/puissance4"),
+// 	{
+// 		ssr: false,
+// 	},
+// );
 
-function Page() {
-	return <DynamicComponentWithNoSSR />;
-}
+// function Page() {
+// 	return <DynamicComponentWithNoSSR />;
+// }
 
-export default Page;
+// export default Page;

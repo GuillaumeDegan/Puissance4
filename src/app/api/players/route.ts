@@ -15,6 +15,19 @@ export async function GET() {
 	return NextResponse.json(players);
 }
 
+export async function getTopPlayers() {
+	await connectMongoDB();
+	const topPlayers = await Player.aggregate([
+		{
+			$sort: { nbOfWins: -1 },
+		},
+		{
+			$limit: 10,
+		},
+	]);
+	return NextResponse.json(topPlayers);
+}
+
 export async function DELETE(req: NextRequest) {
 	const id = req.nextUrl.searchParams.get("id");
 	await connectMongoDB();

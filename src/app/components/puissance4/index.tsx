@@ -1,218 +1,255 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { GridItem } from "@/app/models/game";
+import { Player } from "@/app/page";
+import { useEffect, useRef, useState } from "react";
 
-type GridItem = "R" | "Y" | null;
 type TokenColor = "R" | "Y";
 
 let tokenColor: TokenColor = "R";
 
-export default function Puissance4() {
-	// const [keyValue, setKeyValue] = useState(-1);
-	// const [keyPressed, setKeyPressed] = useState(false);
+interface Puissance4Props {
+	redPlayer: Player | undefined;
+	yellowPlayer: Player | undefined;
+	defaultWinner?: GridItem;
+	playable?: boolean;
+	defaultGrid?: Array<Array<GridItem>>;
+}
 
-	const [grid, setGrid] = useState<Array<Array<GridItem>>>([
-		[null, null, null, null, null, null, null],
-		[null, null, null, null, null, null, null],
-		[null, null, null, null, null, null, null],
-		[null, null, null, null, null, null, null],
-		[null, null, null, null, null, null, null],
-		[null, null, null, null, null, null, null],
-	]);
+export interface Game {
+	grid: Array<Array<GridItem>>;
+	winner: string;
+	loser: string;
+	createdAt?: Date;
+	winnerColor: string;
+}
 
-	useEffect(() => {
-		checkWin();
-	}, [grid]);
+export default function Puissance4({
+	redPlayer,
+	yellowPlayer,
+	defaultWinner = null,
+	playable = true,
+	defaultGrid = [
+		[null, null, null, null, null, null, null],
+		[null, null, null, null, null, null, null],
+		[null, null, null, null, null, null, null],
+		[null, null, null, null, null, null, null],
+		[null, null, null, null, null, null, null],
+		[null, null, null, null, null, null, null],
+	],
+}: Puissance4Props) {
+	const [winner, setWinner] = useState<GridItem>(defaultWinner);
+
+	const [grid, setGrid] = useState<Array<Array<GridItem>>>(defaultGrid);
 
 	const addToken = (column: number) => {
-		setGrid((prev) => {
-			const newGrid = prev.map((row) => row.slice());
+		winner === null &&
+			playable &&
+			setGrid((prev) => {
+				const newGrid = prev.map((row) => row.slice());
 
-			for (let i = newGrid.length - 1; i >= 0; i--) {
-				if (newGrid[i][column] === null) {
-					newGrid[i][column] = tokenColor;
+				for (let i = newGrid.length - 1; i >= 0; i--) {
+					if (newGrid[i][column] === null) {
+						newGrid[i][column] = tokenColor;
 
-					console.log("newGrid", column, newGrid);
-					return newGrid;
+						console.log("newGrid", column, newGrid);
+						return newGrid;
+					}
 				}
-			}
 
-			return prev;
-		});
+				return prev;
+			});
 	};
 
 	useEffect(() => {
-		tokenColor = tokenColor === "R" ? "Y" : "R";
-	}, [grid]);
+		const checkWin = () => {
+			checkHorizontally();
+			checkVertically();
+			checkDiagonallyUpToDown();
+			checkDiagonallyDownToUp();
+		};
 
-	const checkWin = () => {
-		checkHorizontally();
-		checkVertically();
-		checkDiagonallyUpToDown();
-		checkDiagonallyDownToUp();
-	};
+		const checkHorizontally = () => {
+			let currentRTokenInARow = 0;
+			let currentYTokenInARow = 0;
 
-	const checkHorizontally = () => {
-		let currentRTokenInARow = 0;
-		let currentYTokenInARow = 0;
-
-		grid.map((line) => {
-			currentRTokenInARow = 0;
-			currentYTokenInARow = 0;
-			line.map((token: "R" | "Y" | null) => {
-				if (token === "R") {
-					currentRTokenInARow++;
-					currentYTokenInARow = 0;
-				}
-				if (token === "Y") {
-					currentRTokenInARow = 0;
-					currentYTokenInARow++;
-				}
-				if (token === null) {
-					currentRTokenInARow = 0;
-					currentYTokenInARow = 0;
-				}
-				if (currentRTokenInARow === 4) console.log("R win");
-				if (currentYTokenInARow === 4) console.log("Y win");
+			grid.map((line) => {
+				currentRTokenInARow = 0;
+				currentYTokenInARow = 0;
+				line.map((token: "R" | "Y" | null) => {
+					if (token === "R") {
+						currentRTokenInARow++;
+						currentYTokenInARow = 0;
+					}
+					if (token === "Y") {
+						currentRTokenInARow = 0;
+						currentYTokenInARow++;
+					}
+					if (token === null) {
+						currentRTokenInARow = 0;
+						currentYTokenInARow = 0;
+					}
+					if (currentRTokenInARow === 4) handleGameWon("R");
+					if (currentYTokenInARow === 4) handleGameWon("Y");
+				});
 			});
-		});
-	};
+		};
 
-	const checkVertically = () => {
-		let currentRTokenInARow = 0;
-		let currentYTokenInARow = 0;
+		const checkVertically = () => {
+			let currentRTokenInARow = 0;
+			let currentYTokenInARow = 0;
 
-		for (let u = 0; u < 7; u++) {
-			currentRTokenInARow = 0;
-			currentYTokenInARow = 0;
-			for (let i = 0; i < grid.length; i++) {
-				if (grid[i][u] === "R") {
-					currentRTokenInARow++;
-					currentYTokenInARow = 0;
+			for (let u = 0; u < 7; u++) {
+				currentRTokenInARow = 0;
+				currentYTokenInARow = 0;
+				for (let i = 0; i < grid.length; i++) {
+					if (grid[i][u] === "R") {
+						currentRTokenInARow++;
+						currentYTokenInARow = 0;
+					}
+					if (grid[i][u] === "Y") {
+						currentRTokenInARow = 0;
+						currentYTokenInARow++;
+					}
+					if (grid[i][u] === null) {
+						currentRTokenInARow = 0;
+						currentYTokenInARow = 0;
+					}
+					if (currentRTokenInARow === 4) handleGameWon("R");
+					if (currentYTokenInARow === 4) handleGameWon("Y");
 				}
-				if (grid[i][u] === "Y") {
-					currentRTokenInARow = 0;
-					currentYTokenInARow++;
-				}
-				if (grid[i][u] === null) {
-					currentRTokenInARow = 0;
-					currentYTokenInARow = 0;
-				}
-				if (currentRTokenInARow === 4) console.log("R win");
-				if (currentYTokenInARow === 4) console.log("Y win");
 			}
-		}
-	};
+		};
 
-	const checkDiagonallyUpToDown = () => {
-		let currentRTokenInARow = 0;
-		let currentYTokenInARow = 0;
+		const checkDiagonallyUpToDown = () => {
+			let currentRTokenInARow = 0;
+			let currentYTokenInARow = 0;
 
-		// check seulement grande diagonale + une moitié dans un seul sens
-		for (let u = 0; u < grid.length; u++) {
-			currentRTokenInARow = 0;
-			currentYTokenInARow = 0;
-			let n = u;
-			for (let i = 0; i < grid[u].length - 1 - u; i++) {
-				if (grid[n][i] === "R") {
-					currentRTokenInARow++;
-					currentYTokenInARow = 0;
+			// check seulement grande diagonale + une moitié dans un seul sens
+			for (let u = 0; u < grid.length; u++) {
+				currentRTokenInARow = 0;
+				currentYTokenInARow = 0;
+				let n = u;
+				for (let i = 0; i < grid[u].length - 1 - u; i++) {
+					if (grid[n][i] === "R") {
+						currentRTokenInARow++;
+						currentYTokenInARow = 0;
+					}
+					if (grid[n][i] === "Y") {
+						currentRTokenInARow = 0;
+						currentYTokenInARow++;
+					}
+					if (grid[n][i] === null) {
+						currentRTokenInARow = 0;
+						currentYTokenInARow = 0;
+					}
+					if (currentRTokenInARow === 4) handleGameWon("R");
+					if (currentYTokenInARow === 4) handleGameWon("Y");
+					// console.log(n, i, grid[n][i]);
+					// console.log(currentRTokenInARow, currentYTokenInARow);
+					n++;
 				}
-				if (grid[n][i] === "Y") {
-					currentRTokenInARow = 0;
-					currentYTokenInARow++;
-				}
-				if (grid[n][i] === null) {
-					currentRTokenInARow = 0;
-					currentYTokenInARow = 0;
-				}
-				if (currentRTokenInARow === 4) console.log("R win");
-				if (currentYTokenInARow === 4) console.log("Y win");
-				// console.log(n, i, grid[n][i]);
-				// console.log(currentRTokenInARow, currentYTokenInARow);
-				n++;
 			}
-		}
-		// check l'autre moitié
-		for (let u = 1; u < 3; u++) {
-			currentRTokenInARow = 0;
-			currentYTokenInARow = 0;
-			let n = 0;
-			for (let i = u; i < 5; i++) {
-				if (grid[n][i] === "R") {
-					currentRTokenInARow++;
-					currentYTokenInARow = 0;
+			// check l'autre moitié
+			for (let u = 1; u < 3; u++) {
+				currentRTokenInARow = 0;
+				currentYTokenInARow = 0;
+				let n = 0;
+				for (let i = u; i < 5; i++) {
+					if (grid[n][i] === "R") {
+						currentRTokenInARow++;
+						currentYTokenInARow = 0;
+					}
+					if (grid[n][i] === "Y") {
+						currentRTokenInARow = 0;
+						currentYTokenInARow++;
+					}
+					if (grid[n][i] === null) {
+						currentRTokenInARow = 0;
+						currentYTokenInARow = 0;
+					}
+					if (currentRTokenInARow === 4) handleGameWon("R");
+					if (currentYTokenInARow === 4) handleGameWon("Y");
+					n++;
 				}
-				if (grid[n][i] === "Y") {
-					currentRTokenInARow = 0;
-					currentYTokenInARow++;
-				}
-				if (grid[n][i] === null) {
-					currentRTokenInARow = 0;
-					currentYTokenInARow = 0;
-				}
-				if (currentRTokenInARow === 4) console.log("R win");
-				if (currentYTokenInARow === 4) console.log("Y win");
-				n++;
 			}
-		}
-	};
+		};
 
-	const checkDiagonallyDownToUp = () => {
-		let currentRTokenInARow = 0;
-		let currentYTokenInARow = 0;
+		const checkDiagonallyDownToUp = () => {
+			let currentRTokenInARow = 0;
+			let currentYTokenInARow = 0;
 
-		// check seulement grande diagonale + une moitié dans un seul sens
-		for (let u = 5; u > 0; u--) {
-			currentRTokenInARow = 0;
-			currentYTokenInARow = 0;
-			let n = u;
-			for (let i = 6; i > 5 - u; i--) {
-				if (grid[n][i] === "R") {
-					currentRTokenInARow++;
-					currentYTokenInARow = 0;
+			// check seulement grande diagonale + une moitié dans un seul sens
+			for (let u = 5; u > 0; u--) {
+				currentRTokenInARow = 0;
+				currentYTokenInARow = 0;
+				let n = u;
+				for (let i = 6; i > 5 - u; i--) {
+					if (grid[n][i] === "R") {
+						currentRTokenInARow++;
+						currentYTokenInARow = 0;
+					}
+					if (grid[n][i] === "Y") {
+						currentRTokenInARow = 0;
+						currentYTokenInARow++;
+					}
+					if (grid[n][i] === null) {
+						currentRTokenInARow = 0;
+						currentYTokenInARow = 0;
+					}
+					if (currentRTokenInARow === 4) handleGameWon("R");
+					if (currentYTokenInARow === 4) handleGameWon("Y");
+					n--;
 				}
-				if (grid[n][i] === "Y") {
-					currentRTokenInARow = 0;
-					currentYTokenInARow++;
-				}
-				if (grid[n][i] === null) {
-					currentRTokenInARow = 0;
-					currentYTokenInARow = 0;
-				}
-				if (currentRTokenInARow === 4) console.log("R win");
-				if (currentYTokenInARow === 4) console.log("Y win");
-				n--;
 			}
-		}
-		// check l'autre moitié
-		for (let u = 1; u < 2; u++) {
-			currentRTokenInARow = 0;
-			currentYTokenInARow = 0;
-			let n = 5 - u;
-			for (let i = 6; i > 1; i--) {
-				if (grid[n][i] === "R") {
-					currentRTokenInARow++;
-					currentYTokenInARow = 0;
+			// check l'autre moitié
+			for (let u = 1; u < 2; u++) {
+				currentRTokenInARow = 0;
+				currentYTokenInARow = 0;
+				let n = 5 - u;
+				for (let i = 6; i > 1; i--) {
+					if (grid[n][i] === "R") {
+						currentRTokenInARow++;
+						currentYTokenInARow = 0;
+					}
+					if (grid[n][i] === "Y") {
+						currentRTokenInARow = 0;
+						currentYTokenInARow++;
+					}
+					if (grid[n][i] === null) {
+						currentRTokenInARow = 0;
+						currentYTokenInARow = 0;
+					}
+					if (currentRTokenInARow === 4) handleGameWon("R");
+					if (currentYTokenInARow === 4) handleGameWon("Y");
+					n--;
 				}
-				if (grid[n][i] === "Y") {
-					currentRTokenInARow = 0;
-					currentYTokenInARow++;
-				}
-				if (grid[n][i] === null) {
-					currentRTokenInARow = 0;
-					currentYTokenInARow = 0;
-				}
-				if (currentRTokenInARow === 4) console.log("R win");
-				if (currentYTokenInARow === 4) console.log("Y win");
-				n--;
 			}
-		}
-	};
+		};
 
-	const keyDownHandler = React.useCallback((e: KeyboardEvent) => {
-		console.log("pressed", e.key);
-		switch (e.key) {
+		const handleGameWon = async (gameWinner: TokenColor) => {
+			if (yellowPlayer && redPlayer) {
+				setWinner(gameWinner);
+				const game: Game = {
+					grid: grid,
+					loser: gameWinner === "R" ? yellowPlayer._id : redPlayer._id,
+					winner: gameWinner === "R" ? redPlayer._id : yellowPlayer._id,
+					winnerColor: gameWinner,
+				};
+
+				await fetch("http://localhost:3000/api/games", {
+					method: "POST",
+					body: JSON.stringify(game),
+				});
+			}
+		};
+
+		checkWin();
+		tokenColor = tokenColor === "R" ? "Y" : "R";
+	}, [grid, redPlayer, yellowPlayer]);
+
+	const keyDownHandler = (event: React.KeyboardEvent<HTMLElement>) => {
+		switch (event.key) {
 			case "1":
 				addToken(0);
 				break;
@@ -237,20 +274,57 @@ export default function Puissance4() {
 			default:
 				break;
 		}
-	}, []);
+	};
 
-	useEffect(() => {
-		if (typeof window !== "undefined")
-			window.addEventListener("keydown", keyDownHandler);
-	}, []);
-
-	// useEffect(() => {
-	// 	if (keyValue >= 0) addToken(keyValue);
-	// }, [keyValue !== -1]);
+	const divRef = useRef(null);
 
 	return (
-		<main className="flex min-h-screen flex-col items-center justify-between p-24">
+		<main
+			ref={divRef}
+			tabIndex={0}
+			onKeyDown={keyDownHandler}
+			className="flex min-h-screen flex-col items-center justify-between p-24"
+		>
 			<h1>Puissance 4</h1>
+			{winner !== null ? (
+				<div>
+					<h3
+						style={{
+							color: winner === "R" ? "red" : "yellow",
+							fontSize: "40px",
+						}}
+					>{`${
+						winner === "R" ? redPlayer?.name : yellowPlayer?.name
+					} won !!`}</h3>
+				</div>
+			) : (
+				<div
+					style={{
+						display: "flex",
+						flexDirection: "row",
+						width: "100%",
+						justifyContent: "space-between",
+					}}
+				>
+					<h3
+						style={{
+							color: "red",
+							fontSize: "40px",
+						}}
+					>
+						{redPlayer?.name}
+					</h3>
+					<h3
+						style={{
+							color: "yellow",
+							fontSize: "40px",
+						}}
+					>
+						{yellowPlayer?.name}
+					</h3>
+				</div>
+			)}
+
 			<div
 				style={{
 					display: "flex",
