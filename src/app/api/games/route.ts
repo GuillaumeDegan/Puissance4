@@ -4,9 +4,9 @@ import Player from "@/app/models/player";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-	const { grid, winner, loser } = await req.json();
+	const { grid, winner, loser, winnerColor } = await req.json();
 	await connectMongoDB();
-	await Game.create({ grid, winner, loser });
+	await Game.create({ grid, winner, loser, winnerColor });
 	await Player.findByIdAndUpdate(winner, { $inc: { nbOfWins: 1 } });
 	await Player.findByIdAndUpdate(loser, { $inc: { nbOfLoses: 1 } });
 	return NextResponse.json({ message: "Game created" }, { status: 201 });
@@ -14,7 +14,10 @@ export async function POST(req: NextRequest) {
 
 export async function GET() {
 	await connectMongoDB();
-	const games = await Game.find().populate("winner");
+	const games = await Game.find()
+		.populate("winner")
+		.populate("loser")
+		.sort({ createdAt: -1 });
 	return NextResponse.json(games);
 }
 

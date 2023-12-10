@@ -14,6 +14,14 @@ const config: Config = {
 				"gradient-conic":
 					"conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
 			},
+			colors: {
+				gameBlue: "#0025E1",
+				gameBlueBorder: "#2327AF",
+				redToken: "#FF3030",
+				yellowToken: "#FFB000",
+				redBorderToken: "#DB1E2B",
+				yellowBorderToken: "#DB8300",
+			},
 		},
 	},
 	plugins: [],

@@ -4,20 +4,16 @@ import { useEffect, useState } from "react";
 import History from "./components/history";
 import Puissance4 from "./components/puissance4";
 import SelectPlayers from "./components/selectPlayers";
+import { HistoryGameData, Player } from "./utils/common";
 
-export interface Player {
-	_id: string;
-	name: string;
-	nbOfWins: number;
-	nbOfLoses: number;
-}
-
-type Tab = "selectPlayer" | "playTheGame" | "history";
+export type Tab = "selectPlayer" | "playTheGame" | "history" | "viewTheGame";
 
 export default function Home() {
 	const [players, setPlayers] = useState<Player[]>();
 	const [redPlayer, setRedPlayer] = useState<Player | undefined>();
 	const [yellowPlayer, setYellowPlayer] = useState<Player | undefined>();
+	const [historyGameData, setHistoryGameData] = useState<HistoryGameData>();
+
 	const [currentTab, setCurrentTab] = useState<Tab>("selectPlayer");
 
 	useEffect(() => {
@@ -53,39 +49,76 @@ export default function Home() {
 		fetchPlayers();
 	}, []);
 
-	if (!players) {
-		return null;
-	}
+	const displayTabs = () => {
+		if (!players) {
+			return null;
+		}
 
-	return (
-		<main>
-			{currentTab !== "history" && (
-				<button
-					className="absolute top-3 right-3 bg-white text-black p-3 rounded"
-					onClick={() => setCurrentTab("history")}
-				>
-					History
-				</button>
-			)}
-			{currentTab !== "selectPlayer" && currentTab !== "playTheGame" && (
-				<button
-					className="absolute top-3 left-3 bg-white text-black p-3 rounded"
-					onClick={() => setCurrentTab("selectPlayer")}
-				>
-					{"< Back"}
-				</button>
-			)}
-			{currentTab === "selectPlayer" && (
-				<SelectPlayers
-					players={players}
-					setYellowPlayer={setYellowPlayer}
-					setRedPlayer={setRedPlayer}
-				/>
-			)}
-			{currentTab === "playTheGame" && (
-				<Puissance4 redPlayer={redPlayer} yellowPlayer={yellowPlayer} />
-			)}
-			{currentTab === "history" && <History />}
-		</main>
-	);
+		switch (currentTab) {
+			case "selectPlayer":
+				return (
+					<>
+						<SelectPlayers
+							players={players}
+							setYellowPlayer={setYellowPlayer}
+							setRedPlayer={setRedPlayer}
+							redPlayer={redPlayer}
+							yellowPlayer={yellowPlayer}
+						/>
+						<button
+							className="absolute top-3 right-3 bg-gray-700 text-white hover:transform hover:scale-105 transition-transform p-3 rounded"
+							onClick={() => setCurrentTab("history")}
+						>
+							History
+						</button>
+					</>
+				);
+			case "playTheGame":
+				return (
+					<Puissance4
+						redPlayer={redPlayer}
+						yellowPlayer={yellowPlayer}
+						setCurrentTab={setCurrentTab}
+					/>
+				);
+			case "history":
+				return (
+					<>
+						<History
+							setCurrentTab={setCurrentTab}
+							setHistoryGameData={setHistoryGameData}
+						/>
+						<button
+							className="absolute top-3 left-3 bg-gray-700 text-white hover:transform hover:scale-105 transition-transform p-3 rounded"
+							onClick={() => setCurrentTab("selectPlayer")}
+						>
+							{"< Back"}
+						</button>
+					</>
+				);
+			case "viewTheGame":
+				return (
+					<>
+						<Puissance4
+							redPlayer={historyGameData?.redPlayer}
+							yellowPlayer={historyGameData?.yellowPlayer}
+							defaultGrid={historyGameData?.defaultGrid}
+							defaultWinner={historyGameData?.defaultWinner}
+							setCurrentTab={setCurrentTab}
+							playable={false}
+						/>
+						<button
+							className="absolute top-3 left-3 bg-gray-700 text-white hover:transform hover:scale-105 transition-transform p-3 rounded"
+							onClick={() => setCurrentTab("history")}
+						>
+							{"< Back"}
+						</button>
+					</>
+				);
+			default:
+				break;
+		}
+	};
+
+	return <main>{displayTabs()}</main>;
 }

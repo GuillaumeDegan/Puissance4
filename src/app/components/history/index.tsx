@@ -1,11 +1,20 @@
 "use client";
 
+import { Tab } from "@/app/page";
+import { GetGame, HistoryGameData } from "@/app/utils/common";
 import { format } from "date-fns";
-import { useEffect, useState } from "react";
-import { Game } from "../puissance4";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
-export default function History() {
-	const [games, setGames] = useState<Game[]>();
+interface HistoryProps {
+	setCurrentTab: Dispatch<SetStateAction<Tab>>;
+	setHistoryGameData: Dispatch<SetStateAction<HistoryGameData | undefined>>;
+}
+
+export default function History({
+	setCurrentTab,
+	setHistoryGameData,
+}: HistoryProps) {
+	const [games, setGames] = useState<GetGame[]>();
 
 	const fetchGames = async () => {
 		try {
@@ -25,41 +34,45 @@ export default function History() {
 		fetchGames();
 	}, []);
 
+	const handleSeeHistoryGame = (game: GetGame) => {
+		setCurrentTab("viewTheGame");
+		setHistoryGameData({
+			redPlayer: game.winnerColor === "R" ? game.winner : game.loser,
+			yellowPlayer: game.winnerColor === "R" ? game.loser : game.winner,
+			defaultGrid: game.grid,
+			defaultWinner: game.winnerColor,
+		});
+	};
+
 	if (!games) {
 		return null;
 	}
 
 	return (
-		<div className="flex flex-col items-center ">
-			<h1 className="py-5">History</h1>
-			<div className="flex flex-row justify-start w-4/5 p-4">
-				<h3 className="w-1/3">Date</h3>
-				<h3 className="w-1/3">Winner</h3>
-				<h3 className="w-1/3">Loser</h3>
-			</div>
-			{games.map((game, index) => (
-				<div
-					key={index}
-					onClick={() => console.log("game link")}
-					className="flex flex-row justify-start bg-gray-400 rounded w-4/5 p-3 m-1"
-				>
-					<h3 className="w-1/3">
-						{game.createdAt && format(new Date(game.createdAt), "dd/MM/yyyy")}
-					</h3>
-					<h3 className="w-1/3">{game.winner}</h3>
-					<h3 className="w-1/3">{game.loser || "/"}</h3>
+		<div className="flex flex-col items-center">
+			<h1 className="py-7 text-5xl font-bold text-gameBlue">History</h1>
+			<div className="w-4/5 p-8 flex flex-col items-center bg-gray-800 rounded-md">
+				<div className="flex flex-row justify-start w-full px-2">
+					<h3 className="w-1/3 text-lg font-bold">Date</h3>
+					<h3 className="w-1/3 text-lg font-bold">Winner</h3>
+					<h3 className="w-1/3 text-lg font-bold">Loser</h3>
 				</div>
-			))}
-
-			{/* <Puissance4
-				redPlayer={
-					games[0].winnerColor === "R" ? games[0].winner : games[0].loser
-				}
-				yellowPlayer={
-					games[0].winnerColor === "R" ? games[0].loser : games[0].winner
-				}
-				defaultWinner={games[0].winnerColor}
-			/> */}
+				{games.map((game, index) => (
+					<div
+						key={index}
+						onClick={() => handleSeeHistoryGame(game)}
+						className={`flex flex-row justify-start ${
+							index % 2 ? "bg-gray-400" : "bg-gray-500"
+						}  rounded w-full p-3 m-1 cursor-pointer hover:transform hover:scale-105 transition-transform`}
+					>
+						<h3 className="w-1/3">
+							{game.createdAt && format(new Date(game.createdAt), "dd/MM/yyyy")}
+						</h3>
+						<h3 className="w-1/3">{game.winner.name || "/"}</h3>
+						<h3 className="w-1/3">{game.loser.name || "/"}</h3>
+					</div>
+				))}
+			</div>
 		</div>
 	);
 }

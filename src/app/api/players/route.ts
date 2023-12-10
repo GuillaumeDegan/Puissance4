@@ -5,8 +5,8 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
 	const { name } = await req.json();
 	await connectMongoDB();
-	await Player.create({ name, nbOfWins: 0, nbOfLoses: 0 });
-	return NextResponse.json({ message: "Player created" }, { status: 201 });
+	const player = await Player.create({ name, nbOfWins: 0, nbOfLoses: 0 });
+	return NextResponse.json(player, { status: 201 });
 }
 
 export async function GET() {

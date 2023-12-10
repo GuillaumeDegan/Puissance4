@@ -1,10 +1,8 @@
 "use client";
 
-import { GridItem } from "@/app/models/game";
-import { Player } from "@/app/page";
-import { useEffect, useRef, useState } from "react";
-
-type TokenColor = "R" | "Y";
+import { Tab } from "@/app/page";
+import { CreateGame, GridItem, Player, TokenColor } from "@/app/utils/common";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 
 let tokenColor: TokenColor = "R";
 
@@ -14,14 +12,7 @@ interface Puissance4Props {
 	defaultWinner?: GridItem;
 	playable?: boolean;
 	defaultGrid?: Array<Array<GridItem>>;
-}
-
-export interface Game {
-	grid: Array<Array<GridItem>>;
-	winner: string;
-	loser: string;
-	createdAt?: Date;
-	winnerColor: string;
+	setCurrentTab: Dispatch<SetStateAction<Tab>>;
 }
 
 export default function Puissance4({
@@ -29,6 +20,7 @@ export default function Puissance4({
 	yellowPlayer,
 	defaultWinner = null,
 	playable = true,
+	setCurrentTab,
 	defaultGrid = [
 		[null, null, null, null, null, null, null],
 		[null, null, null, null, null, null, null],
@@ -62,6 +54,8 @@ export default function Puissance4({
 	};
 
 	useEffect(() => {
+		if (!playable) return;
+
 		const checkWin = () => {
 			checkHorizontally();
 			checkVertically();
@@ -230,7 +224,7 @@ export default function Puissance4({
 		const handleGameWon = async (gameWinner: TokenColor) => {
 			if (yellowPlayer && redPlayer) {
 				setWinner(gameWinner);
-				const game: Game = {
+				const game: CreateGame = {
 					grid: grid,
 					loser: gameWinner === "R" ? yellowPlayer._id : redPlayer._id,
 					winner: gameWinner === "R" ? redPlayer._id : yellowPlayer._id,
@@ -246,7 +240,7 @@ export default function Puissance4({
 
 		checkWin();
 		tokenColor = tokenColor === "R" ? "Y" : "R";
-	}, [grid, redPlayer, yellowPlayer]);
+	}, [grid, playable, redPlayer, yellowPlayer]);
 
 	const keyDownHandler = (event: React.KeyboardEvent<HTMLElement>) => {
 		switch (event.key) {
@@ -283,11 +277,11 @@ export default function Puissance4({
 			ref={divRef}
 			tabIndex={0}
 			onKeyDown={keyDownHandler}
-			className="flex min-h-screen flex-col items-center justify-between p-24"
+			className="flex min-h-screen flex-col items-center justify-around"
 		>
-			<h1>Puissance 4</h1>
-			{winner !== null ? (
-				<div>
+			<h1 className="text-5xl font-bold text-gameBlue">Puissance 4</h1>
+			{winner !== null && (
+				<div className="flex flex-col items-center">
 					<h3
 						style={{
 							color: winner === "R" ? "red" : "yellow",
@@ -296,82 +290,137 @@ export default function Puissance4({
 					>{`${
 						winner === "R" ? redPlayer?.name : yellowPlayer?.name
 					} won !!`}</h3>
-				</div>
-			) : (
-				<div
-					style={{
-						display: "flex",
-						flexDirection: "row",
-						width: "100%",
-						justifyContent: "space-between",
-					}}
-				>
-					<h3
-						style={{
-							color: "red",
-							fontSize: "40px",
-						}}
+					<button
+						onClick={() => setCurrentTab("selectPlayer")}
+						className="bg-white text-black py-2 px-5 rounded"
 					>
-						{redPlayer?.name}
-					</h3>
-					<h3
-						style={{
-							color: "yellow",
-							fontSize: "40px",
-						}}
-					>
-						{yellowPlayer?.name}
-					</h3>
+						Home
+					</button>
 				</div>
 			)}
 
-			<div
-				style={{
-					display: "flex",
-					flexDirection: "column",
-					justifyContent: "center",
-				}}
-			>
-				{grid.map((line, index) => {
-					return (
-						<div
-							key={index}
+			<div className="flex flex-row justify-around items-center w-full">
+				<div
+					style={{ width: "300px" }}
+					className="flex flex-row items-center justify-start"
+				>
+					<div
+						style={{
+							backgroundColor: "#FF3030",
+							border: "#DB1E2B 5px solid",
+							borderRadius: "10px",
+							padding: "10px 15px",
+						}}
+					>
+						<h3
 							style={{
-								display: "flex",
-								width: "500px",
-								flexDirection: "row",
-								justifyContent: "space-around",
-								backgroundColor: "blue",
+								color: "#AF1825",
+								fontSize: "40px",
 							}}
 						>
-							{line.map((token: string | null, i: number) => {
-								return token === null ? (
-									<div
-										key={i}
-										style={{
-											width: "50px",
-											height: "50px",
-											borderRadius: "100%",
-											margin: "5px",
-											backgroundColor: "white",
-										}}
-									></div>
-								) : (
-									<div
-										key={i}
-										style={{
-											width: "50px",
-											height: "50px",
-											borderRadius: "100%",
-											margin: "5px",
-											backgroundColor: token === "R" ? "red" : "yellow",
-										}}
-									></div>
-								);
-							})}
-						</div>
-					);
-				})}
+							{redPlayer?.name}
+						</h3>
+					</div>
+					{!winner && (
+						<div
+							style={{
+								width: "0",
+								height: "0",
+								margin: "30px 20px",
+								borderTop: "18px solid transparent",
+								borderBottom: "18px solid transparent",
+								borderLeft:
+									tokenColor === "Y"
+										? "30px solid #FF3030"
+										: "30px solid #00000030",
+							}}
+						></div>
+					)}
+				</div>
+
+				<div
+					style={{
+						width: "500px",
+						backgroundColor: "#0025E1",
+						border: "#2327AF 5px solid",
+					}}
+					className="rounded-md p-3"
+				>
+					{grid.map((line, index) => {
+						return (
+							<div key={index} className="flex w-full flex-row justify-around">
+								{line.map((token: string | null, i: number) => {
+									return token === null ? (
+										<div
+											key={i}
+											onClick={() => addToken(i)}
+											style={{
+												width: "50px",
+												height: "50px",
+												borderRadius: "100%",
+												margin: "5px",
+												backgroundColor: "#00267A",
+											}}
+										></div>
+									) : (
+										<div
+											key={i}
+											onClick={() => addToken(i)}
+											style={{
+												width: "50px",
+												height: "50px",
+												borderRadius: "100%",
+												margin: "5px",
+												border:
+													token === "R"
+														? "#DB1E2B 5px solid"
+														: "#DB8300 5px solid",
+												backgroundColor: token === "R" ? "#FF3030" : "#FFB000",
+											}}
+										></div>
+									);
+								})}
+							</div>
+						);
+					})}
+				</div>
+				<div
+					style={{ width: "300px" }}
+					className="flex flex-row items-center justify-end"
+				>
+					{!winner && (
+						<div
+							style={{
+								width: "0",
+								height: "0",
+								margin: "30px 20px",
+								borderTop: "18px solid transparent",
+								borderBottom: "18px solid transparent",
+								borderRight:
+									tokenColor === "Y"
+										? "30px solid #00000030"
+										: "30px solid #FFB000",
+							}}
+						></div>
+					)}
+					<div
+						style={{
+							backgroundColor: "#FFB000",
+							border: "#DB8300 5px solid",
+							borderRadius: "10px",
+							padding: "10px 15px",
+						}}
+					>
+						<h3
+							style={{
+								color: "#BF6F00",
+								fontSize: "40px",
+							}}
+						>
+							{yellowPlayer?.name}
+						</h3>
+					</div>
+				</div>
 			</div>
 		</main>
 	);

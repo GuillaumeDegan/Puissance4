@@ -1,6 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-
-export type GridItem = "R" | "Y" | null;
+import { GridItem } from "../utils/common";
 
 const gameSchema = new Schema(
 	{
@@ -9,8 +8,14 @@ const gameSchema = new Schema(
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "Player",
 		},
-		loser: String,
-		winnerColor: String,
+		loser: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Player",
+		},
+		winnerColor: {
+			type: String,
+			enum: ["R", "Y"],
+		},
 	},
 	{
 		timestamps: true,
