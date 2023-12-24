@@ -4,6 +4,7 @@ import { Tab } from "@/app/page";
 import { GetGame, HistoryGameData } from "@/app/utils/common";
 import { format } from "date-fns";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { env } from "../../../../config";
 
 interface HistoryProps {
 	setCurrentTab: Dispatch<SetStateAction<Tab>>;
@@ -18,7 +19,7 @@ export default function History({
 
 	const fetchGames = async () => {
 		try {
-			const response = await fetch("http://localhost:3000/api/games", {
+			const response = await fetch(`${env.NEXT_PUBLIC_SITE_URL}api/games`, {
 				method: "GET",
 			});
 

@@ -2,6 +2,7 @@
 
 import { Player, TokenColor } from "@/app/utils/common";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { env } from "../../../../config";
 
 interface SelectPlayersProps {
 	players: Player[];
@@ -40,9 +41,12 @@ export default function SelectPlayers({
 
 	async function fetchTopPlayers() {
 		try {
-			const response = await fetch("http://localhost:3000/api/topPlayers", {
-				method: "GET",
-			});
+			const response = await fetch(
+				`${env.NEXT_PUBLIC_SITE_URL}api/topPlayers`,
+				{
+					method: "GET",
+				},
+			);
 
 			if (response) {
 				setTopPlayers(await response.json());
@@ -55,7 +59,7 @@ export default function SelectPlayers({
 	const createPlayer = async (color: TokenColor) => {
 		try {
 			const playerName = color === "R" ? newRedPlayer : newYellowPlayer;
-			const response = await fetch("http://localhost:3000/api/players", {
+			const response = await fetch(`${env.NEXT_PUBLIC_SITE_URL}api/players`, {
 				method: "POST",
 				body: JSON.stringify({
 					name: playerName,
@@ -272,7 +276,7 @@ export default function SelectPlayers({
 				</div>
 			</div>
 
-			<div className="bg-gameBlue p-5 rounded-md border-4 border-gameBlueBorder">
+			<div className="bg-gameBlue p-5 rounded-md border-4 border-gameBlueBorder mb-10">
 				<h3 className="text-3xl text-center font-bold text-white">Top 10</h3>
 				<h5 className="text-center pb-3 font-bold text-white">winners</h5>
 				<div className="w-80">

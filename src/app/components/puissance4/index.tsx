@@ -3,8 +3,7 @@
 import { Tab } from "@/app/page";
 import { CreateGame, GridItem, Player, TokenColor } from "@/app/utils/common";
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
-
-let tokenColor: TokenColor = "R";
+import { env } from "../../../../config";
 
 interface Puissance4Props {
 	redPlayer: Player | undefined;
@@ -33,24 +32,26 @@ export default function Puissance4({
 	const [winner, setWinner] = useState<GridItem>(defaultWinner);
 
 	const [grid, setGrid] = useState<Array<Array<GridItem>>>(defaultGrid);
+	const [tokenColor, setTokenColor] = useState<TokenColor>("R");
 
 	const addToken = (column: number) => {
-		winner === null &&
-			playable &&
-			setGrid((prev) => {
-				const newGrid = prev.map((row) => row.slice());
+		if (winner === null) {
+			if (playable) {
+				setGrid((prev) => {
+					const newGrid = prev.map((row) => row.slice());
 
-				for (let i = newGrid.length - 1; i >= 0; i--) {
-					if (newGrid[i][column] === null) {
-						newGrid[i][column] = tokenColor;
+					for (let i = newGrid.length - 1; i >= 0; i--) {
+						if (newGrid[i][column] === null) {
+							newGrid[i][column] = tokenColor;
 
-						console.log("newGrid", column, newGrid);
-						return newGrid;
+							return newGrid;
+						}
 					}
-				}
 
-				return prev;
-			});
+					return prev;
+				});
+			}
+		}
 	};
 
 	useEffect(() => {
@@ -231,7 +232,7 @@ export default function Puissance4({
 					winnerColor: gameWinner,
 				};
 
-				await fetch("http://localhost:3000/api/games", {
+				await fetch(`${env.NEXT_PUBLIC_SITE_URL}api/games`, {
 					method: "POST",
 					body: JSON.stringify(game),
 				});
@@ -239,7 +240,8 @@ export default function Puissance4({
 		};
 
 		checkWin();
-		tokenColor = tokenColor === "R" ? "Y" : "R";
+		setTokenColor(tokenColor === "R" ? "Y" : "R");
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [grid, playable, redPlayer, yellowPlayer]);
 
 	const keyDownHandler = (event: React.KeyboardEvent<HTMLElement>) => {
@@ -292,7 +294,7 @@ export default function Puissance4({
 					} won !!`}</h3>
 					<button
 						onClick={() => setCurrentTab("selectPlayer")}
-						className="bg-white text-black py-2 px-5 rounded"
+						className="bg-gray-700 text-white hover:transform hover:scale-105 transition-transform p-3 rounded"
 					>
 						Home
 					</button>
@@ -330,7 +332,7 @@ export default function Puissance4({
 								borderTop: "18px solid transparent",
 								borderBottom: "18px solid transparent",
 								borderLeft:
-									tokenColor === "Y"
+									tokenColor === "R"
 										? "30px solid #FF3030"
 										: "30px solid #00000030",
 							}}
@@ -397,7 +399,7 @@ export default function Puissance4({
 								borderTop: "18px solid transparent",
 								borderBottom: "18px solid transparent",
 								borderRight:
-									tokenColor === "Y"
+									tokenColor === "R"
 										? "30px solid #00000030"
 										: "30px solid #FFB000",
 							}}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { env } from "../../config";
 import History from "./components/history";
 import Puissance4 from "./components/puissance4";
 import SelectPlayers from "./components/selectPlayers";
@@ -33,7 +34,7 @@ export default function Home() {
 
 	const fetchPlayers = async () => {
 		try {
-			const response = await fetch("http://localhost:3000/api/players", {
+			const response = await fetch(`${env.NEXT_PUBLIC_SITE_URL}api/players`, {
 				method: "GET",
 			});
 
@@ -43,6 +44,12 @@ export default function Home() {
 		} catch (error) {
 			console.log(error);
 		}
+	};
+
+	const handleGoBackDuringGame = () => {
+		setRedPlayer(undefined);
+		setYellowPlayer(undefined);
+		setCurrentTab("selectPlayer");
 	};
 
 	useEffect(() => {
@@ -75,11 +82,19 @@ export default function Home() {
 				);
 			case "playTheGame":
 				return (
-					<Puissance4
-						redPlayer={redPlayer}
-						yellowPlayer={yellowPlayer}
-						setCurrentTab={setCurrentTab}
-					/>
+					<>
+						<Puissance4
+							redPlayer={redPlayer}
+							yellowPlayer={yellowPlayer}
+							setCurrentTab={setCurrentTab}
+						/>
+						<button
+							className="absolute top-3 left-3 bg-gray-700 text-white hover:transform hover:scale-105 transition-transform p-3 rounded"
+							onClick={handleGoBackDuringGame}
+						>
+							{"< Back"}
+						</button>
+					</>
 				);
 			case "history":
 				return (
